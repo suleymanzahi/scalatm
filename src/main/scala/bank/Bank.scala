@@ -11,6 +11,14 @@ import scala.collection.mutable.ArrayBuffer
 class Bank() {
 
   var accounts: ArrayBuffer[BankAccount] = ArrayBuffer[BankAccount]()
+  var nextAccountNumber = 1000
+
+  def addAccount(c: Customer) : BankAccount = { NewAccount
+    nextAccountNumber += 1
+    val newAcc = new BankAccount(c)
+    newAcc.accountNumber = nextAccountNumber
+    newAcc
+  }
 
   /**
     * Returns a list of every bank account in the bank.
@@ -36,7 +44,7 @@ class Bank() {
     * Returns a list of all customers whose names match
     * the provided name pattern.
     */
-  def findByName(namePattern: String): Vector[Customer] = ???
+  def findByName(namePattern: String): Vector[Customer] = accounts.map(bankacc => bankacc.holder).filter(cust => cust.name == namePattern).toVector
 
   /**
     * Executes an event in the bank.

@@ -7,9 +7,8 @@ package bank
   */
 class BankAccount(val holder: Customer) {
 
+  var accountNumber: Int = ???
   private var _balance: BigInt = 0
-
-  val accountNumber: Int = ???
 
   /**
     * Deposits the provided amount in this account.
@@ -37,4 +36,19 @@ class BankAccount(val holder: Customer) {
   override def toString(): String = ???
 
 }
+
+/* object BankAccount {
+  var accNbr = 1000
+
+  def apply(holder: Customer): BankAccount = {
+    val newAccount = new BankAccount(holder)
+    newAccount.accountNumber = accNbr + 1
+    accNbr += 1
+    newAccount
+  }
+} */
+
+
+
+
 
