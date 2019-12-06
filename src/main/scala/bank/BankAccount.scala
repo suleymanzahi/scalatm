@@ -7,7 +7,7 @@ package bank
   */
 class BankAccount(val holder: Customer) {
 
-  var accountNumber: Int = ???
+  var accountNumber: Int = 0
   private var _balance: BigInt = 0
 
   /**
@@ -26,27 +26,20 @@ class BankAccount(val holder: Customer) {
     * if the transaction was successful, otherwise false.
     */
   def withdraw(amount: BigInt): Boolean = {
-    if (amount <= _balance) {
+    if (amount <= _balance && !(amount < 0)) {
       _balance -= amount
       true
     } else false
   }
 
-
-  override def toString(): String = ???
+  override def toString(): String =
+    s"""
+       |Konto $accountNumber (${holder.name}, id ${holder.id})
+       |$balance kr
+       |""".stripMargin //behöver mer detaljer som id, saldo etc, bestämmer utskrift av konton
 
 }
 
-/* object BankAccount {
-  var accNbr = 1000
-
-  def apply(holder: Customer): BankAccount = {
-    val newAccount = new BankAccount(holder)
-    newAccount.accountNumber = accNbr + 1
-    accNbr += 1
-    newAccount
-  }
-} */
 
 
 
