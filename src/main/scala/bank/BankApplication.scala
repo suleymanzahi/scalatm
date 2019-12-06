@@ -1,5 +1,7 @@
 package bank
 
+import bank.time.Date
+
 import scala.io.StdIn._
 
 object BankApplication {
@@ -56,8 +58,8 @@ object BankApplication {
   }
 
   def transferAmount(): Unit = {
-    val accFrom = readLine("Konto att överföra från").toInt
-    val accTo = readLine("Konto att överföra till").toInt
+    val accFrom = readLine("Kontonummer att överföra från:").toInt
+    val accTo = readLine("Kontonummer att överföra till:").toInt
     val amount = BigInt(readLine("Summa:"))
     val transfer = Transfer(accFrom, accTo, amount)
     val printAction = bank.doEvent(transfer)
@@ -88,6 +90,7 @@ object BankApplication {
           case 10 => ???
           case 11 => loop = true; println("Avslutar...")
         }
+
       } catch {
         case e: Exception => (); println("Felaktig inmatning. Försök igen")
       }

@@ -1,5 +1,7 @@
 package bank
 
+import java.nio.file.{Files, Path, Paths, StandardOpenOption}
+
 import bank.time.Date
 
 import scala.collection.mutable.ArrayBuffer
@@ -12,6 +14,17 @@ class Bank() {
 
   private var accounts: ArrayBuffer[BankAccount] = ArrayBuffer[BankAccount]()
   var nextAccountNumber = 999
+
+  /**
+    * Writes string to a file
+    *
+    * @param fileName Path of file
+    * @param data     string written to fileName
+    * @return
+    */
+
+  def save(fileName: String, data: String): Path =
+    Files.write(Paths.get(fileName), data.getBytes("UTF-8"), StandardOpenOption.APPEND)
 
   /**
     * Returns a list of every bank account in the bank.
@@ -47,6 +60,7 @@ class Bank() {
     * Returns a string describing whether the
     * event was successful or failed.
     */
+
   def doEvent(event: BankEvent): String = {
     event match {
       case Deposit(account, amount) => { // use BankAccount.deposit method, amount as param
@@ -54,9 +68,17 @@ class Bank() {
         val findAccount = findByNumber(account)
 
         findAccount match {
-          case a: Some[BankAccount] => a.get.deposit(amount); s = "Transaktionen lyckades."
+          case a: Some[BankAccount] => a.get.deposit(amount);
+            s =
+              s"""Transaktionen lyckades.
+                 |${Date.now().toNaturalFormat}
+                 |""".stripMargin
+            save("C:\\Users\\suley\\Desktop\\Bank\\bank_log.txt", "\n" + {
+              HistoryEntry(Date.now(), event).toLogFormat
+            })
           case None => s = "Transaktionen misslyckades. Inget sådant konto hittades."
         }
+
         s
 
       }
@@ -66,7 +88,10 @@ class Bank() {
 
         findAccount match {
           case a: Some[BankAccount] => {
-            if (a.get.withdraw(amount)) s = "Transaktionen lyckades."
+            if (a.get.withdraw(amount)) s =
+              s"""Transaktionen lyckades.
+                 |${Date.now().toNaturalFormat}
+                 |""".stripMargin
             else s = "Transaktionen misslyckades. Otillräckligt saldo."
           }
           case None => s = "Transaktionen misslyckades. Inget sådant konto hittades."
@@ -81,10 +106,12 @@ class Bank() {
 
         def validAccounts(): Boolean = from.isInstanceOf[Some[BankAccount]] && to.isInstanceOf[Some[BankAccount]]
 
-        if (validAccounts()) {
-          from.get.withdraw(amount)
+        if (validAccounts() && from.get.withdraw(amount)) {
           to.get.deposit(amount)
-          s = "Transaktionen lyckades."
+          s =
+            s"""Transaktionen lyckades.
+               |${Date.now().toNaturalFormat}
+               |""".stripMargin
         }
         else s = "Transaktionen misslyckades. Inget sådant konto hittades."
         s
@@ -95,7 +122,11 @@ class Bank() {
         val ba = new BankAccount(c)
         ba.accountNumber = nextAccountNumber
         accounts += ba
-        val s = s"Nytt konto skapat med kontonummer: ${ba.accountNumber}"
+        val s =
+          s"""Nytt konto skapat med kontonummer:
+             |${ba.accountNumber}
+             |${Date.now().toNaturalFormat}
+             |""".stripMargin
         s
       }
       case DeleteAccount(account) => { // remove from accounts sequence with -=
