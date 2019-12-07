@@ -42,7 +42,7 @@ object BankApplication {
     Files.write(Paths.get(fileName), (data + System.lineSeparator()).getBytes("UTF-8"), StandardOpenOption.APPEND)
 
   def writeToLogAndHistory(eventtype: BankEvent): Unit = {
-    if (eventtype.bool) {
+    if (eventtype.eventSuccess) {
       val entry = HistoryEntry(Date.now(), eventtype)
       bank.historyEntries += entry
       save("C:\\Users\\suley\\Desktop\\Bank\\bank_log.txt",

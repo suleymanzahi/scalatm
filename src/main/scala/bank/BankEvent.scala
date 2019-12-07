@@ -13,7 +13,10 @@ sealed trait BankEvent {
     */
   def toNaturalFormat: String
 
-  var bool: Boolean = false
+  /**
+    * Returns true if BankEvent is successful
+    */
+  var eventSuccess: Boolean = false
 }
 
 case class Deposit(account: Int, amount: BigInt) extends BankEvent {

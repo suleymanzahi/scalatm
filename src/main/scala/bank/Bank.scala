@@ -61,7 +61,7 @@ class Bank() {
               s"""Transaktionen lyckades.
                  |${Date.now().toNaturalFormat}
                  |""".stripMargin
-            event.bool = true
+            event.eventSuccess = true
           case None => depositDescription = "Transaktionen misslyckades. Inget sådant konto hittades."
         }
 
@@ -74,7 +74,7 @@ class Bank() {
 
         findAccount match {
           case a: Some[BankAccount] => {
-            event.bool = true
+            event.eventSuccess = true
             if (a.get.withdraw(amount)) {
               withdrawDescription =
                 s"""Transaktionen lyckades.
@@ -96,7 +96,7 @@ class Bank() {
         def validAccounts(): Boolean = from.isInstanceOf[Some[BankAccount]] && to.isInstanceOf[Some[BankAccount]]
 
         if (validAccounts() && from.get.withdraw(amount)) {
-          event.bool = true
+          event.eventSuccess = true
           to.get.deposit(amount)
           transferDescription =
             s"""Transaktionen lyckades.
@@ -119,7 +119,7 @@ class Bank() {
              |${ba.accountNumber}
              |${Date.now().toNaturalFormat}
              |""".stripMargin
-        event.bool = true
+        event.eventSuccess = true
         newAccountDescription
       }
       case DeleteAccount(account) => { // remove from accounts sequence with -=
@@ -128,7 +128,7 @@ class Bank() {
 
         deletion match {
           case a: Some[BankAccount] => {
-            event.bool = true
+            event.eventSuccess = true
             accounts -= a.get
             deletionDescription = "Transaktionen lyckades."
           }
