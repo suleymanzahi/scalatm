@@ -1,0 +1,12 @@
+
+
+  // TODO:
+  // Läsa in från fil -> behöver läsa bokstav ->
+  // konstruera med BankEvent.toLogFormat(str)
+  // HistoryEntry.fromLogFormat separerar datum och event-sträng, så använda först
+
+  // TODO: pseudkod
+  // Läs från logfil, ta rader och lägg i vektor, gör till sträng(mkString)
+  // Separera datum och event
+  // För varje element i vektorn, elementet är logbeskrvning, kör BankEvent.toLogFormat(element)
+  // BankEvent konstruerar en klass, ex NewAccount, spara resultatet, lägg i doEvent

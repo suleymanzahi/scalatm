@@ -1,9 +1,6 @@
 package bank
 
-import java.nio.file.{Files, Path, Paths, StandardOpenOption}
-
 import bank.time.Date
-
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -13,40 +10,31 @@ import scala.collection.mutable.ArrayBuffer
 class Bank() {
 
   private var accounts: ArrayBuffer[BankAccount] = ArrayBuffer[BankAccount]()
+  var historyEntries: ArrayBuffer[HistoryEntry] = ArrayBuffer[HistoryEntry]()
   var nextAccountNumber = 999
 
-  /**
-    * Writes string to a file
-    *
-    * @param fileName Path of file
-    * @param data     string written to fileName
-    * @return
-    */
-
-  def save(fileName: String, data: String): Path =
-    Files.write(Paths.get(fileName), data.getBytes("UTF-8"), StandardOpenOption.APPEND)
 
   /**
     * Returns a list of every bank account in the bank.
     * The returned list is sorted in alphabetical order based
     * on customer name.
     */
-  def allAccounts(): Vector[BankAccount] = accounts.sortWith(_.holder.name < _.holder.name).toVector
+  def allAccounts(): Vector[BankAccount] =
+    accounts.sortWith(_.holder.name < _.holder.name).toVector
 
-  /*
-  def load(fileName: String): Vector[String] =
-   io.Source.fromFile(fileName).getLines.toVector maybe?
-  * */
+
   /**
     * Returns the account holding the provided account number.
     */
-  def findByNumber(accountNbr: Int): Option[BankAccount] = accounts.find(c => c.accountNumber == accountNbr)
+  def findByNumber(accountNbr: Int): Option[BankAccount] =
+    accounts.find(c => c.accountNumber == accountNbr)
 
   /**
     * Returns a list of every account belonging to
     * the customer with the provided id.
     */
-  def findAccountsForHolder(id: Long): Vector[BankAccount] = accounts.filter(x => x.holder.id == id).toVector
+  def findAccountsForHolder(id: Long): Vector[BankAccount] =
+    accounts.filter(x => x.holder.id == id).toVector
 
   /**
     * Returns a list of all customers whose names match
@@ -64,80 +52,89 @@ class Bank() {
   def doEvent(event: BankEvent): String = {
     event match {
       case Deposit(account, amount) => { // use BankAccount.deposit method, amount as param
-        var s = ""
+        var depositDescription = ""
         val findAccount = findByNumber(account)
 
         findAccount match {
-          case a: Some[BankAccount] => a.get.deposit(amount);
-            s =
+          case a: Some[BankAccount] => a.get.deposit(amount)
+            depositDescription =
               s"""Transaktionen lyckades.
                  |${Date.now().toNaturalFormat}
                  |""".stripMargin
-            save("C:\\Users\\suley\\Desktop\\Bank\\bank_log.txt", "\n" + {
-              HistoryEntry(Date.now(), event).toLogFormat
-            })
-          case None => s = "Transaktionen misslyckades. Inget sådant konto hittades."
+            event.bool = true
+          case None => depositDescription = "Transaktionen misslyckades. Inget sådant konto hittades."
         }
 
-        s
+        depositDescription
 
       }
       case Withdraw(account, amount) => { // use BankAccount.withdraw method, amount as param
-        var s = ""
+        var withdrawDescription = ""
         val findAccount = findByNumber(account)
 
         findAccount match {
           case a: Some[BankAccount] => {
-            if (a.get.withdraw(amount)) s =
-              s"""Transaktionen lyckades.
-                 |${Date.now().toNaturalFormat}
-                 |""".stripMargin
-            else s = "Transaktionen misslyckades. Otillräckligt saldo."
+            event.bool = true
+            if (a.get.withdraw(amount)) {
+              withdrawDescription =
+                s"""Transaktionen lyckades.
+                   |${Date.now().toNaturalFormat}
+                   |""".stripMargin
+            }
+            else withdrawDescription = "Transaktionen misslyckades. Otillräckligt saldo."
           }
-          case None => s = "Transaktionen misslyckades. Inget sådant konto hittades."
+          case None => withdrawDescription = "Transaktionen misslyckades. Inget sådant konto hittades."
         }
-        s
+        withdrawDescription
 
       }
       case Transfer(accFrom, accTo, amount) => { // should use .getOrElse, if get return None -> might crash
-        var s = ""
+        var transferDescription = ""
         val from = findByNumber(accFrom)
         val to = findByNumber(accTo)
 
         def validAccounts(): Boolean = from.isInstanceOf[Some[BankAccount]] && to.isInstanceOf[Some[BankAccount]]
 
         if (validAccounts() && from.get.withdraw(amount)) {
+          event.bool = true
           to.get.deposit(amount)
-          s =
+          transferDescription =
             s"""Transaktionen lyckades.
                |${Date.now().toNaturalFormat}
                |""".stripMargin
+
         }
-        else s = "Transaktionen misslyckades. Inget sådant konto hittades."
-        s
+        else transferDescription = "Transaktionen misslyckades. Inget sådant konto hittades."
+        transferDescription
       }
       case NewAccount(name, id) => {
         nextAccountNumber += 1
         val c = Customer(id, name)
         val ba = new BankAccount(c)
+
         ba.accountNumber = nextAccountNumber
         accounts += ba
-        val s =
+        val newAccountDescription =
           s"""Nytt konto skapat med kontonummer:
              |${ba.accountNumber}
              |${Date.now().toNaturalFormat}
              |""".stripMargin
-        s
+        event.bool = true
+        newAccountDescription
       }
       case DeleteAccount(account) => { // remove from accounts sequence with -=
-        var s = ""
+        var deletionDescription = ""
         val deletion = findByNumber(account)
 
         deletion match {
-          case a: Some[BankAccount] => accounts -= a.get; s = "Transaktionen lyckades."
-          case None => s = "Transaktionen misslyckades. Inget sådant konto hittades."
+          case a: Some[BankAccount] => {
+            event.bool = true
+            accounts -= a.get
+            deletionDescription = "Transaktionen lyckades."
+          }
+          case None => deletionDescription = "Transaktionen misslyckades. Inget sådant konto hittades."
         }
-        s
+        deletionDescription
       }
     }
   }
@@ -145,16 +142,20 @@ class Bank() {
   /**
     * Returns a log of all changes to the bank's state.
     */
-  def history(): Vector[HistoryEntry] = ???
+  def history(): Vector[HistoryEntry] = historyEntries.toVector
 
   /**
     * Resets the bank to the state it had at the provided date.
     * Returns a string describing whether the event was
     * successful or failed.
     */
-  def returnToState(returnDate: Date): String = ??? // delete all lines after given date(returnDate) ?
+  def returnToState(returnDate: Date): String = ???
 
-  // nextAccountNumber = 999 or minimumAccountNumber = accounts.map(ba => ba.accountNumber).min and set it
+  //TODO:
+  // delete all lines after given date(returnDate) ?
+  // delete those instances as well ?
+  // minimumAccountNumber = accounts.map(ba => ba.accountNumber).max and set
   // nextAccountNumber to this
+  // pseudokod: radera rader från logfil ; återbygg med buildFromLogs
 
 }

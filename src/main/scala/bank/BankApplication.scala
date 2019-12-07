@@ -1,5 +1,7 @@
 package bank
 
+import java.nio.file.{Files, Path, Paths, StandardOpenOption}
+
 import bank.time.Date
 
 import scala.io.StdIn._
@@ -23,10 +25,36 @@ object BankApplication {
 
   val bank = new Bank
 
+  def buildFromLogs(fileName: String): Unit = {
+    val file = io.Source.fromFile(fileName).getLines.toVector
+    for (i <- file.indices) {
+      val eventString = file(i).split(' ').drop(5).mkString(" ")
+      val builtEvent = BankEvent.fromLogFormat(eventString)
+      val builtHistoryEntry = HistoryEntry.fromLogFormat(file(i))
+      bank.doEvent(builtEvent)
+      bank.historyEntries += builtHistoryEntry
+
+    }
+
+  }
+
+  def save(fileName: String, data: String): Path =
+    Files.write(Paths.get(fileName), (data + System.lineSeparator()).getBytes("UTF-8"), StandardOpenOption.APPEND)
+
+  def writeToLogAndHistory(eventtype: BankEvent): Unit = {
+    if (eventtype.bool) {
+      val entry = HistoryEntry(Date.now(), eventtype)
+      bank.historyEntries += entry
+      save("C:\\Users\\suley\\Desktop\\Bank\\bank_log.txt",
+        entry.toLogFormat)
+    }
+  }
+
   def deleteAccount(): Unit = {
     val account = readLine("Ange konto att radera:").toInt
     val deletion = DeleteAccount(account)
     val printAction = bank.doEvent(deletion)
+    writeToLogAndHistory(deletion)
     println(printAction)
   }
 
@@ -38,6 +66,7 @@ object BankApplication {
       fname + " " + lname
     })
     val printAction = bank.doEvent(newAcc)
+    writeToLogAndHistory(newAcc)
     println(printAction)
   }
 
@@ -46,6 +75,7 @@ object BankApplication {
     val amount = BigInt(readLine("Summa:"))
     val deposit = Deposit(account, amount)
     val printAction = bank.doEvent(deposit)
+    writeToLogAndHistory(deposit)
     println(printAction)
   }
 
@@ -54,6 +84,7 @@ object BankApplication {
     val amount = BigInt(readLine("Summa:"))
     val withdraw = Withdraw(account, amount)
     val printAction = bank.doEvent(withdraw)
+    writeToLogAndHistory(withdraw)
     println(printAction)
   }
 
@@ -63,14 +94,18 @@ object BankApplication {
     val amount = BigInt(readLine("Summa:"))
     val transfer = Transfer(accFrom, accTo, amount)
     val printAction = bank.doEvent(transfer)
+    writeToLogAndHistory(transfer)
     println(printAction)
 
   }
 
   def main(args: Array[String]): Unit = {
 
+    buildFromLogs("C:\\Users\\suley\\Desktop\\Bank\\bank_log.txt")
+
     var loop = false
     while (!loop) {
+
 
       println(menu)
 
@@ -86,7 +121,7 @@ object BankApplication {
           case 6 => createAccount()
           case 7 => deleteAccount()
           case 8 => println(bank.allAccounts().mkString(""))
-          case 9 => ???
+          case 9 => println(bank.history().map(he => he.toNaturalFormat).mkString("\n"))
           case 10 => ???
           case 11 => loop = true; println("Avslutar...")
         }

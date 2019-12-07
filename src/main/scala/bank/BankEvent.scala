@@ -4,14 +4,16 @@ import scala.util.Try
 
 sealed trait BankEvent {
   /**
-   * Returns a string suitable for writing to log files.
-   */
+    * Returns a string suitable for writing to log files.
+    */
   def toLogFormat: String
 
   /**
-   * Returns a string suitable for showing to users.
-   */
+    * Returns a string suitable for showing to users.
+    */
   def toNaturalFormat: String
+
+  var bool: Boolean = false
 }
 
 case class Deposit(account: Int, amount: BigInt) extends BankEvent {
@@ -41,10 +43,10 @@ case class DeleteAccount(account: Int) extends BankEvent {
 
 object BankEvent {
   /**
-   * Converts a string obtained from toLogFormat into a BankEvent object.
-   */
+    * Converts a string obtained from toLogFormat into a BankEvent object.
+    */
   def fromLogFormat(str: String): BankEvent = {
-    Try{
+    Try {
       val xs = str.split(' ')
       xs(0) match {
         case "D" => Deposit(xs(1).toInt, BigInt(xs(2)))
@@ -54,7 +56,7 @@ object BankEvent {
         case "E" => DeleteAccount(xs(1).toInt)
         case s => throw new IllegalArgumentException(s"Unknown BankEvent type: $str")
       }
-    }.recover{
+    }.recover {
       case e: IndexOutOfBoundsException =>
         throw new IllegalArgumentException(s"Invalid BankEvent string: $str", e)
       case e: NumberFormatException =>
