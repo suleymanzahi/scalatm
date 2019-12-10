@@ -10,3 +10,10 @@
   // Separera datum och event
   // För varje element i vektorn, elementet är logbeskrvning, kör BankEvent.toLogFormat(element)
   // BankEvent konstruerar en klass, ex NewAccount, spara resultatet, lägg i doEvent
+
+  //TODO: psuedokod returnState
+    // delete all lines after given date(returnDate) ?
+    // delete those instances as well ?
+    // minimumAccountNumber = accounts.map(ba => ba.accountNumber).max and set
+    // nextAccountNumber to this
+    // pseudokod: radera rader från logfil ; återbygg med buildFromLogs

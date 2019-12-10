@@ -1,9 +1,7 @@
 package bank
 
 import java.nio.file.{Files, Path, Paths, StandardOpenOption}
-
 import bank.time.Date
-
 import scala.io.StdIn._
 
 object BankApplication {
@@ -27,15 +25,14 @@ object BankApplication {
 
   def buildFromLogs(fileName: String): Unit = {
     val file = io.Source.fromFile(fileName).getLines.toVector
+    bank.nextAccountNumber = 999
     for (i <- file.indices) {
       val eventString = file(i).split(' ').drop(5).mkString(" ")
       val builtEvent = BankEvent.fromLogFormat(eventString)
       val builtHistoryEntry = HistoryEntry.fromLogFormat(file(i))
       bank.doEvent(builtEvent)
       bank.historyEntries += builtHistoryEntry
-
     }
-
   }
 
   def save(fileName: String, data: String): Path =
@@ -45,7 +42,7 @@ object BankApplication {
     if (eventtype.eventSuccess) {
       val entry = HistoryEntry(Date.now(), eventtype)
       bank.historyEntries += entry
-      save("C:\\Users\\suley\\Desktop\\Bank\\bank_log.txt",
+      save("C:\\Users\\suley\\Desktop\\Bank\\test.txt",
         entry.toLogFormat)
     }
   }
@@ -99,32 +96,43 @@ object BankApplication {
 
   }
 
+  def resetDate(fileName: String): Unit = {
+    println("Vilket datum vill du återställa banken till?")
+    val year = readLine("År:").toInt
+    val month = readLine("Månad:").toInt
+    val day = readLine("Datum(dag):").toInt
+    val hour = readLine("Timme:").toInt
+    val minute = readLine("Minut:").toInt
+    val newDate = Date(year, month, day, hour, minute)
+    bank.returnToState(newDate, fileName)
+  }
+
   def main(args: Array[String]): Unit = {
 
-    buildFromLogs("C:\\Users\\suley\\Desktop\\Bank\\bank_log.txt")
+    buildFromLogs("C:\\Users\\suley\\Desktop\\Bank\\test.txt")
 
     var loop = false
     while (!loop) {
 
-
       println(menu)
 
       try {
-        val readChoice = readLine("Val:").toInt
+      val readChoice = readLine("Val:").toInt
 
-        readChoice match {
-          case 1 => println(bank.findAccountsForHolder(readLine("Id:").toLong).mkString("")) //some sort of error handling should be added
-          case 2 => println(bank.findByName(readLine("Namn:")).mkString("\n")) // same as above
-          case 3 => depositAmount()
-          case 4 => withdrawAmount()
-          case 5 => transferAmount()
-          case 6 => createAccount()
-          case 7 => deleteAccount()
-          case 8 => println(bank.allAccounts().mkString(""))
-          case 9 => println(bank.history().map(he => he.toNaturalFormat).mkString("\n"))
-          case 10 => ???
-          case 11 => loop = true; println("Avslutar...")
-        }
+      readChoice match {
+        case 1 => println(bank.findAccountsForHolder(readLine("Id:").toLong).mkString("")) //some sort of error handling should be added
+        case 2 => println(bank.findByName(readLine("Namn:")).mkString("\n")) // same as above
+        case 3 => depositAmount()
+        case 4 => withdrawAmount()
+        case 5 => transferAmount()
+        case 6 => createAccount()
+        case 7 => deleteAccount()
+        case 8 => println(bank.allAccounts().mkString(""))
+        case 9 => println(bank.history().map(he => he.toNaturalFormat).mkString("\n"))
+        case 10 => resetDate("C:\\Users\\suley\\Desktop\\Bank\\test.txt")
+        case 11 => loop = true; println("Avslutar...")
+        case _ => println("Felaktig inmatning. Försök igen")
+      }
 
       } catch {
         case e: Exception => (); println("Felaktig inmatning. Försök igen")

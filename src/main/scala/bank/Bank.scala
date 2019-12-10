@@ -1,7 +1,9 @@
 package bank
 
+import java.nio.file.{Files, Paths}
 import bank.time.Date
 import scala.collection.mutable.ArrayBuffer
+import io.Source._
 
 /**
   * Creates a new bank with no accounts and no history.
@@ -9,7 +11,7 @@ import scala.collection.mutable.ArrayBuffer
 
 class Bank() {
 
-  private var accounts: ArrayBuffer[BankAccount] = ArrayBuffer[BankAccount]()
+  var accounts: ArrayBuffer[BankAccount] = ArrayBuffer[BankAccount]()
   var historyEntries: ArrayBuffer[HistoryEntry] = ArrayBuffer[HistoryEntry]()
   var nextAccountNumber = 999
 
@@ -74,8 +76,8 @@ class Bank() {
 
         findAccount match {
           case a: Some[BankAccount] => {
-            event.eventSuccess = true
             if (a.get.withdraw(amount)) {
+              event.eventSuccess = true
               withdrawDescription =
                 s"""Transaktionen lyckades.
                    |${Date.now().toNaturalFormat}
@@ -104,7 +106,7 @@ class Bank() {
                |""".stripMargin
 
         }
-        else transferDescription = "Transaktionen misslyckades. Inget sådant konto hittades."
+        else transferDescription = "Transaktionen misslyckades. Fel konto angivet eller summan överstiger saldot."
         transferDescription
       }
       case NewAccount(name, id) => {
@@ -149,13 +151,16 @@ class Bank() {
     * Returns a string describing whether the event was
     * successful or failed.
     */
-  def returnToState(returnDate: Date): String = ???
-
-  //TODO:
-  // delete all lines after given date(returnDate) ?
-  // delete those instances as well ?
-  // minimumAccountNumber = accounts.map(ba => ba.accountNumber).max and set
-  // nextAccountNumber to this
-  // pseudokod: radera rader från logfil ; återbygg med buildFromLogs
-
+  def returnToState(returnDate: Date, fileName: String): String = {
+    import BankApplication._ // error handling for if date is wrong should be added
+    var s = "Når hit"
+    val currentFile = fromFile(fileName).getLines.toVector
+    val index = history().indexWhere(he => returnDate.compare(he.date) < 0)
+    val newFile = currentFile.take(index)
+    historyEntries.clear()
+    accounts.clear()
+    Files.write(Paths.get(fileName), (newFile.mkString("\n") + System.lineSeparator()).getBytes("UTF-8"))
+    buildFromLogs(fileName)
+    s
+  }
 }
