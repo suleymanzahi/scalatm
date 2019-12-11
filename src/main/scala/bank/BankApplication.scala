@@ -35,14 +35,14 @@ object BankApplication {
     }
   }
 
-  def save(fileName: String, data: String): Path =
+  def writeToLog(fileName: String, data: String): Path =
     Files.write(Paths.get(fileName), (data + System.lineSeparator()).getBytes("UTF-8"), StandardOpenOption.APPEND)
 
   def writeToLogAndHistory(eventtype: BankEvent): Unit = {
     if (eventtype.eventSuccess) {
       val entry = HistoryEntry(Date.now(), eventtype)
       bank.historyEntries += entry
-      save("C:\\Users\\suley\\Desktop\\Bank\\test.txt",
+      writeToLog("C:\\Users\\suley\\Desktop\\Bank\\test.txt",
         entry.toLogFormat)
     }
   }
@@ -104,7 +104,7 @@ object BankApplication {
     val hour = readLine("Timme:").toInt
     val minute = readLine("Minut:").toInt
     val newDate = Date(year, month, day, hour, minute)
-    bank.returnToState(newDate, fileName)
+    println(bank.returnToState(newDate, fileName))
   }
 
   def main(args: Array[String]): Unit = {
@@ -116,7 +116,7 @@ object BankApplication {
 
       println(menu)
 
-      try {
+      //try {
       val readChoice = readLine("Val:").toInt
 
       readChoice match {
@@ -134,9 +134,9 @@ object BankApplication {
         case _ => println("Felaktig inmatning. Försök igen")
       }
 
-      } catch {
+      /* } catch {
         case e: Exception => (); println("Felaktig inmatning. Försök igen")
-      }
+      } */
 
 
     }

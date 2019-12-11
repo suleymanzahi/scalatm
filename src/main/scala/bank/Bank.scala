@@ -11,7 +11,7 @@ import io.Source._
 
 class Bank() {
 
-  var accounts: ArrayBuffer[BankAccount] = ArrayBuffer[BankAccount]()
+  private var accounts: ArrayBuffer[BankAccount] = ArrayBuffer[BankAccount]()
   var historyEntries: ArrayBuffer[HistoryEntry] = ArrayBuffer[HistoryEntry]()
   var nextAccountNumber = 999
 
@@ -51,47 +51,45 @@ class Bank() {
     * event was successful or failed.
     */
 
+  def returnEventDescription(description: String): String = {
+    s"""$description
+       |${Date.now().toNaturalFormat}
+       |""".stripMargin
+  }
+
   def doEvent(event: BankEvent): String = {
     event match {
       case Deposit(account, amount) => { // use BankAccount.deposit method, amount as param
-        var depositDescription = ""
         val findAccount = findByNumber(account)
 
         findAccount match {
           case a: Some[BankAccount] => a.get.deposit(amount)
-            depositDescription =
-              s"""Transaktionen lyckades.
-                 |${Date.now().toNaturalFormat}
-                 |""".stripMargin
             event.eventSuccess = true
-          case None => depositDescription = "Transaktionen misslyckades. Inget sådant konto hittades."
-        }
+            returnEventDescription("Transaktionen lyckades")
 
-        depositDescription
+          case None => returnEventDescription("Transaktionen misslyckades. Inget sådant konto hittades.")
+        }
 
       }
       case Withdraw(account, amount) => { // use BankAccount.withdraw method, amount as param
-        var withdrawDescription = ""
+
         val findAccount = findByNumber(account)
 
         findAccount match {
           case a: Some[BankAccount] => {
             if (a.get.withdraw(amount)) {
               event.eventSuccess = true
-              withdrawDescription =
-                s"""Transaktionen lyckades.
-                   |${Date.now().toNaturalFormat}
-                   |""".stripMargin
+              returnEventDescription("Transaktionen lyckades")
             }
-            else withdrawDescription = "Transaktionen misslyckades. Otillräckligt saldo."
+            else returnEventDescription("Transaktionen misslyckades. Otillräckligt saldo.")
           }
-          case None => withdrawDescription = "Transaktionen misslyckades. Inget sådant konto hittades."
+          case None => returnEventDescription("Transaktionen misslyckades. Inget sådant konto hittades.")
         }
-        withdrawDescription
+
 
       }
-      case Transfer(accFrom, accTo, amount) => { // should use .getOrElse, if get return None -> might crash
-        var transferDescription = ""
+      case Transfer(accFrom, accTo, amount) => {
+
         val from = findByNumber(accFrom)
         val to = findByNumber(accTo)
 
@@ -100,14 +98,10 @@ class Bank() {
         if (validAccounts() && from.get.withdraw(amount)) {
           event.eventSuccess = true
           to.get.deposit(amount)
-          transferDescription =
-            s"""Transaktionen lyckades.
-               |${Date.now().toNaturalFormat}
-               |""".stripMargin
+          returnEventDescription("Transaktionen lyckades")
 
         }
-        else transferDescription = "Transaktionen misslyckades. Fel konto angivet eller summan överstiger saldot."
-        transferDescription
+        else returnEventDescription("Transaktionen misslyckades. Fel konto angivet eller summan överstiger saldot.")
       }
       case NewAccount(name, id) => {
         nextAccountNumber += 1
@@ -125,18 +119,18 @@ class Bank() {
         newAccountDescription
       }
       case DeleteAccount(account) => { // remove from accounts sequence with -=
-        var deletionDescription = ""
+
         val deletion = findByNumber(account)
 
         deletion match {
           case a: Some[BankAccount] => {
             event.eventSuccess = true
             accounts -= a.get
-            deletionDescription = "Transaktionen lyckades."
+            returnEventDescription("Transaktionen lyckades")
           }
-          case None => deletionDescription = "Transaktionen misslyckades. Inget sådant konto hittades."
+          case None => returnEventDescription("Transaktionen misslyckades. Inget sådant konto hittades.")
         }
-        deletionDescription
+
       }
     }
   }
@@ -153,14 +147,19 @@ class Bank() {
     */
   def returnToState(returnDate: Date, fileName: String): String = {
     import BankApplication._ // error handling for if date is wrong should be added
-    var s = "Når hit"
+
     val currentFile = fromFile(fileName).getLines.toVector
     val index = history().indexWhere(he => returnDate.compare(he.date) < 0)
-    val newFile = currentFile.take(index)
-    historyEntries.clear()
-    accounts.clear()
-    Files.write(Paths.get(fileName), (newFile.mkString("\n") + System.lineSeparator()).getBytes("UTF-8"))
-    buildFromLogs(fileName)
-    s
+    if (index != -1) { // because indexWhere returns -1 if not found index.
+      val newFile = currentFile.take(index)
+      historyEntries.clear()
+      accounts.clear()
+      Files.write(Paths.get(fileName), (newFile.mkString("\n") + System.lineSeparator()).getBytes("UTF-8"))
+      buildFromLogs(fileName)
+      returnEventDescription("Banken återställd.")
+
+    }
+    else returnEventDescription("Banken kunde inte återställas. Datum ej funnet.")
+
   }
 }

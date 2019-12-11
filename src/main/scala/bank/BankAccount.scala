@@ -13,7 +13,10 @@ class BankAccount(val holder: Customer) {
   /**
     * Deposits the provided amount in this account.
     */
-  def deposit(amount: BigInt): Unit = _balance += amount
+  def deposit(amount: BigInt): Unit = {
+    require(amount >= 0, "Summan kan ej vara mindre än noll.")
+    _balance += amount
+  }
 
   /**
     * Returns the balance of this account.
