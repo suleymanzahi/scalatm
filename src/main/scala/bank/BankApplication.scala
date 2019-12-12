@@ -152,7 +152,7 @@ object BankApplication {
 
       println(menu)
 
-      //try {
+      try {
       val readChoice = readLine("Val:").toInt
 
       readChoice match {
@@ -170,9 +170,9 @@ object BankApplication {
         case _ => println("Felaktig inmatning. Försök igen")
       }
 
-      /* } catch {
+       } catch {
         case e: Exception => (); println("Felaktig inmatning. Försök igen")
-      } */
+      }
 
 
     }
