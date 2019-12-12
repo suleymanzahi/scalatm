@@ -2,12 +2,13 @@ package bank
 
 /**
   * Creates a new bank account for the customer provided.
-  * The account is given a unique account number and initially
-  * has a balance of 0 kr.
+  * @param holder A customer to be assigned to the bank account
   */
 class BankAccount(val holder: Customer) {
 
+  /** The account number */
   var accountNumber: Int = 0
+
   private var _balance: BigInt = 0
 
   /**

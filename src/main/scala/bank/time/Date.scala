@@ -39,6 +39,9 @@ case class Date(year: Int, month: Int, dayOfMonth: Int, hour: Int, minute: Int) 
   }
 }
 
+/**
+  * Companion object for [[Date]]
+  */
 object Date {
   /**
    * Creates a Date object based on the current time of the computer's clock.

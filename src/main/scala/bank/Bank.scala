@@ -8,54 +8,61 @@ import io.Source._
 /**
   * Creates a new bank with no accounts and no history.
   */
-
 class Bank() {
 
   private var accounts: ArrayBuffer[BankAccount] = ArrayBuffer[BankAccount]()
+  /** A list of all event and their respective date, created as instances of [[HistoryEntry]] */
   var historyEntries: ArrayBuffer[HistoryEntry] = ArrayBuffer[HistoryEntry]()
+  /** Used to generate the account number for the next account to be created */
   var nextAccountNumber = 999
 
 
   /**
-    * Returns a list of every bank account in the bank.
-    * The returned list is sorted in alphabetical order based
-    * on customer name.
+    * Returns a list of every bank account in the bank, in alphabetical order
     */
   def allAccounts(): Vector[BankAccount] =
     accounts.sortWith(_.holder.name < _.holder.name).toVector
 
 
   /**
-    * Returns the account holding the provided account number.
+    * Returns the account holding the provided account number
+    * @param accountNbr Unique number of the bank account
     */
   def findByNumber(accountNbr: Int): Option[BankAccount] =
     accounts.find(c => c.accountNumber == accountNbr)
 
   /**
-    * Returns a list of every account belonging to
-    * the customer with the provided id.
+    * Returns a list of every account belonging to the customer
+    * @param id The ID of the customer
     */
   def findAccountsForHolder(id: Long): Vector[BankAccount] =
     accounts.filter(x => x.holder.id == id).toVector
 
   /**
-    * Returns a list of all customers whose names match
-    * the provided name pattern.
+    * Returns a list of all customers whose names match the provided name pattern.
     */
   def findByName(namePattern: String): Vector[Customer] =
     accounts.map(ba => ba.holder).filter(c => c.name.toLowerCase.contains(namePattern.toLowerCase)).toVector
 
-  /**
-    * Executes an event in the bank.
-    * Returns a string describing whether the
-    * event was successful or failed.
-    */
 
+  /**
+    * Helper method for returning a string describing an event in [[doEvent]]
+    * @param description Text to be formatted
+    * @return Returns a string formatted with the current date
+    */
   def returnEventDescription(description: String): String = {
     s"""$description
        |${Date.now().toNaturalFormat}
        |""".stripMargin
   }
+
+  /**
+    * Executes an event in the bank.
+    * @return Returns a string describing whether the event was successful or failed.
+    * For example, if a new account is to be created, a [[NewAccount]] is taken as argument.
+    * [[doEvent]] instantiates a new [[BankAccount]] and assigns [[NewAccount]]'s arguments to
+    * the [[BankAccount]] instance. Same procedures are used to execute events in [[doEvent]]
+    */
 
   def doEvent(event: BankEvent): String = {
     event match {

@@ -1,9 +1,13 @@
+/**
+  * Provides classes for creating and running a bank application
+  */
 package bank
 
 import java.nio.file.{Files, Path, Paths, StandardOpenOption}
 import bank.time.Date
 import scala.io.StdIn._
 
+/** Creates a bank application and runs it  */
 object BankApplication {
 
   val menu: String =
@@ -23,6 +27,10 @@ object BankApplication {
 
   val bank = new Bank
 
+  /**
+    * Recreates the bank from its previous state, prior to closing the application
+    * @param fileName Path of the log file as string
+    */
   def buildFromLogs(fileName: String): Unit = {
     val file = io.Source.fromFile(fileName).getLines.toVector
     bank.nextAccountNumber = 999
@@ -35,9 +43,19 @@ object BankApplication {
     }
   }
 
+  /**
+    * Helper method to write to a file
+    * @param fileName Path of the log file as string
+    * @param data The content to be written to the log file
+    * @return A Path instance of the log file
+    */
   def writeToLog(fileName: String, data: String): Path =
     Files.write(Paths.get(fileName), (data + System.lineSeparator()).getBytes("UTF-8"), StandardOpenOption.APPEND)
 
+  /**
+    * Writes content to the log file and enters the eventtype in [[Bank.historyEntries]]
+    * @param eventtype A instance of type [[BankEvent]]
+    */
   def writeToLogAndHistory(eventtype: BankEvent): Unit = {
     if (eventtype.eventSuccess) {
       val entry = HistoryEntry(Date.now(), eventtype)
@@ -47,6 +65,9 @@ object BankApplication {
     }
   }
 
+  /**
+    * Deletes an account, by creating a [[DeleteAccount]] instance
+    */
   def deleteAccount(): Unit = {
     val account = readLine("Ange konto att radera:").toInt
     val deletion = DeleteAccount(account)
@@ -55,6 +76,9 @@ object BankApplication {
     println(printAction)
   }
 
+  /**
+  * Creates a new account, by creating a [[NewAccount]] instance
+  */
   def createAccount(): Unit = {
     val fname = readLine("Förnamn:")
     val lname = readLine("Efternamn:")
@@ -67,6 +91,9 @@ object BankApplication {
     println(printAction)
   }
 
+  /**
+    * Deposits an amount to an account, by creating a [[Deposit]] instance
+    */
   def depositAmount(): Unit = {
     val account = readLine("Konto:").toInt
     val amount = BigInt(readLine("Summa:"))
@@ -76,6 +103,9 @@ object BankApplication {
     println(printAction)
   }
 
+  /**
+    * Withdraws an amount from an account, by creating a [[Withdraw]] instance
+    */
   def withdrawAmount(): Unit = {
     val account = readLine("Konto:").toInt
     val amount = BigInt(readLine("Summa:"))
@@ -85,6 +115,9 @@ object BankApplication {
     println(printAction)
   }
 
+  /**
+    * Transfers an amount between two accounts, by creating a [[Transfer]] instance
+    */
   def transferAmount(): Unit = {
     val accFrom = readLine("Kontonummer att överföra från:").toInt
     val accTo = readLine("Kontonummer att överföra till:").toInt
@@ -96,6 +129,9 @@ object BankApplication {
 
   }
 
+  /**
+    * Resets the bank to a certain date, by creating a [[Bank.returnToState]] instance
+    */
   def resetDate(fileName: String): Unit = {
     println("Vilket datum vill du återställa banken till?")
     val year = readLine("År:").toInt
