@@ -60,7 +60,7 @@ object BankApplication {
     if (eventtype.eventSuccess) {
       val entry = HistoryEntry(Date.now(), eventtype)
       bank.historyEntries += entry
-      writeToLog("C:\\Users\\suley\\Desktop\\Bank\\test.txt",
+      writeToLog("test.txt",
         entry.toLogFormat)
     }
   }
@@ -145,7 +145,7 @@ object BankApplication {
 
   def main(args: Array[String]): Unit = {
 
-    buildFromLogs("C:\\Users\\suley\\Desktop\\Bank\\test.txt")
+    buildFromLogs("test.txt")
 
     var loop = false
     while (!loop) {
@@ -165,7 +165,7 @@ object BankApplication {
         case 7 => deleteAccount()
         case 8 => println(bank.allAccounts().mkString(""))
         case 9 => println(bank.history().map(he => he.toNaturalFormat).mkString("\n"))
-        case 10 => resetDate("C:\\Users\\suley\\Desktop\\Bank\\test.txt")
+        case 10 => resetDate("test.txt")
         case 11 => loop = true; println("Avslutar...")
         case _ => println("Felaktig inmatning. Försök igen")
       }

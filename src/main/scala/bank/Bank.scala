@@ -156,7 +156,7 @@ class Bank() {
     import BankApplication._ // error handling for if date is wrong should be added
 
     val currentFile = fromFile(fileName).getLines.toVector
-    val index = history().indexWhere(he => returnDate.compare(he.date) < 0)
+    val index = history().indexWhere(he => returnDate.compare(he.date) <= 0)
     println(index)
     if (index != -1 && index != 0) { // because indexWhere returns -1 if not found index.
       val newFile = currentFile.take(index)
